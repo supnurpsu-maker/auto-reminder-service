@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visa Reminder Service</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: 'Kanit', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
+    .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+    #profile-img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #00B900; margin: 0 auto 20px; display: none; }
+    h2 { margin: 10px 0; color: #333; }
+    #status { font-size: 14px; color: #888; margin-top: 15px; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #00B900; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div id="loading-ui">
+    <div class="loader"></div>
+    <p>กำลังโหลดโปรไฟล์ LINE...</p>
+  </div>
+  
+  <img id="profile-img" src="">
+  <h2 id="display-name"></h2>
+  <div id="status"></div>
+</div>
+
+<script>
+  // 1. ระบุค่าสำคัญของคุณที่นี่
+  const LIFF_ID = "2009130967-umrbWER7"; 
+  const GAS_URL = "ใส่_URL_ของ_GAS_ที่คุณก๊อปปี้มาที่นี่"; 
+
+  async function main() {
+    const statusLabel = document.getElementById('status');
+    const nameLabel = document.getElementById('display-name');
+    const img = document.getElementById('profile-img');
+    const loadingUI = document.getElementById('loading-ui');
+
+    try {
+      // เริ่มต้น LIFF
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        // ดึงโปรไฟล์
+        const profile = await liff.getProfile();
+        
+        // แสดงผล
+        loadingUI.style.display = "none";
+        img.src = profile.pictureUrl;
+        img.style.display = "block";
+        nameLabel.innerText = profile.displayName;
+        statusLabel.innerText = "กำลังบันทึกข้อมูล...";
+
+        // ส่งข้อมูลไปบันทึกที่ GAS (doPost)
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            uid: profile.userId,
+            name: profile.displayName
+          })
+        });
+
+        if (response.ok) {
+          statusLabel.innerText = "เชื่อมต่อสำเร็จและบันทึกข้อมูลแล้ว ✅";
+        } else {
+          statusLabel.innerText = "เชื่อมต่อสำเร็จ (แต่บันทึกลงชีตไม่ได้)";
+        }
+      }
+    } catch (err) {
+      loadingUI.style.display = "none";
+      nameLabel.innerText = "เกิดข้อผิดพลาด";
+      statusLabel.innerText = err.message;
+    }
+  }
+
+  window.onload = main;
+</script>
+</body>
+</html>
