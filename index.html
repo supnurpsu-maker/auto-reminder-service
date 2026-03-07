@@ -25,23 +25,23 @@
 
 <div class="card">
   <img id="profile-img" src="">
-  <h2 id="display-name">กำลังโหลด...</h2>
+  <h2 id="display-name">Loading...</h2>
   
   <div id="form-section" class="hidden">
     <div class="input-group">
-      <label>รหัสนักศึกษา (10 หลัก)</label>
-      <input type="number" id="stdId" placeholder="เช่น 6412345678" oninput="validate()">
+      <label>Student ID (10 digitd)</label>
+      <input type="number" id="stdId" placeholder="ex. 6412345678" oninput="validate()">
     </div>
     
     <div class="input-group">
-      <label>วันที่เดินทางมาถึง (Arrival Date)</label>
+      <label>Arrival Date or Date of your last 90-day report</label>
       <input type="date" id="arrivalDate" onchange="validate()">
     </div>
 
-    <button id="submitBtn" onclick="sendData()" disabled>ลงทะเบียนข้อมูล</button>
+    <button id="submitBtn" onclick="sendData()" disabled>Register</button>
   </div>
 
-  <div id="status">กำลังเชื่อมต่อ LINE...</div>
+  <div id="status">Connecting to LINE...</div>
 </div>
 
 <script>
@@ -58,9 +58,9 @@
         userProfile = await liff.getProfile();
         document.getElementById('profile-img').src = userProfile.pictureUrl;
         document.getElementById('profile-img').style.display = "block";
-        document.getElementById('display-name').innerText = "คุณ " + userProfile.displayName;
+        document.getElementById('display-name').innerText = "User " + userProfile.displayName;
         document.getElementById('form-section').classList.remove('hidden');
-        document.getElementById('status').innerText = "กรุณากรอกข้อมูลให้ครบถ้วน";
+        document.getElementById('status').innerText = "Please fill out all required information.";
       }
     } catch (err) { document.getElementById('status').innerText = "Error: " + err.message; }
   }
@@ -78,7 +78,7 @@
     const status = document.getElementById('status');
 
     btn.disabled = true;
-    btn.innerText = "กำลังบันทึก...";
+    btn.innerText = "Saving...";
 
     try {
       await fetch(GAS_URL, {
@@ -91,10 +91,10 @@
         })
       });
 
-      status.innerText = "บันทึกสำเร็จ! กำลังปิดหน้าต่าง...";
+      status.innerText = "Successfully saved! Closing...";
       setTimeout(() => liff.closeWindow(), 2000);
     } catch (err) {
-      status.innerText = "เกิดข้อผิดพลาด กรุณาลองใหม่";
+      status.innerText = "Error occurred. Please try again.";
       btn.disabled = false;
     }
   }
